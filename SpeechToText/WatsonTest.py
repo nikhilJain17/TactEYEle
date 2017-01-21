@@ -54,6 +54,7 @@ def recordAndTranscribeAudio():
 
 	r = requests.post(url, data=audio, headers=headers, auth=(USERNAME, PASSWORD))
 
-	return (r.text)
+	text_file = open("WatsonSTTResult.txt", "w")
+	text_file.write(r.text)
+	text_file.close()
 
-recordAndTranscribeAudio()
