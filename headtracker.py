@@ -1,11 +1,17 @@
 # BACKUP PLAN OF THE CENTURY
-
+import os
 import cv2
 import numpy as np
 import uuid
 import PIL
 from PIL import Image
 from pynput.mouse import Button, Controller
+
+
+def kill():
+	raise SystemExit
+	# cv2.destroyAllWindows() 
+	# os.system('\003')
 
 
 def main():
@@ -18,7 +24,8 @@ def main():
 	# load the webcam feed
 	capture = cv2.VideoCapture(0)
 
-	while True:
+	# while [STEPH'S FUNCTION] is true 
+	while True: 
 		ret, img = capture.read()
 		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 		faces = face_cascade.detectMultiScale(gray, 1.3, 5)  # array with found faces
@@ -87,8 +94,13 @@ def main():
 					mouse.move(15, 0)
 				elif mouse.position[0] > 1390:
 					mouse.move(-15, 0)
+
 			if (abs(difUp) > 10):
 				mouse.move(0, .5 * difUp)
+				if mouse.position[1] < 10:
+					mouse.move(0, 15)
+				elif mouse.position[0] > 790:
+					mouse.move(0, -15)
 
 
 		# cv2.resizeWindow('img', 1400, 800)

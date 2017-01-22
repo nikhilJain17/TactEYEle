@@ -1,0 +1,14 @@
+{
+   "results": [
+      {
+         "alternatives": [
+            {
+               "confidence": 0.736, 
+               "transcript": "eh dot dot "
+            }
+         ], 
+         "final": true
+      }
+   ], 
+   "result_index": 0
+}

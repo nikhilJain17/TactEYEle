@@ -85,7 +85,7 @@ while True:
 		# only finds the right pupil
 		# but do we really need anything else
 		# then again, do we really need anything?
-
+ 
 		# delete the biggest blob
 		if len(countours) >= 2:
 			# find the biggest blob
