@@ -1,5 +1,4 @@
 from TestWatson import recordAndTranscribeAudio
-import SendKeys
 from time import sleep
 import subprocess
 import pyautogui
@@ -20,7 +19,7 @@ def determineAndWriteTranscript():
 				transcriptSansTranscribe = ''
 				if (determineIfWrite(transcript)):	
 					transcriptSansTranscribe = transcript[11:(len(transcript))]
-					SendKeys.SendKeys(transcriptSansTranscribe, with_spaces = True)
+					pyautogui.typewrite(transcriptSansTranscribe)
 					break
 				else:
 					executeFunctions(transcript)
@@ -44,33 +43,33 @@ def executeFunctions(newTranscript):
     # elif newTranscript == "open word":
     #     subprocess.call(["C:\\Program Files\\Microsoft Office\\Office14\\WINWORD.exe"])
         
-    elif newTranscript == "alt tab":
-        pyautogui.hotkey('alt','tab')
+    elif newTranscript == "command tab":
+        pyautogui.hotkey('command','tab')
         
     elif newTranscript == "control tab":
         pyautogui.hotkey('ctrl','tab')
         
-    elif newTranscript == "control delete":
-        pyautogui.hotkey('ctrl','delete')
+    elif newTranscript == "command delete":
+        pyautogui.hotkey('command','delete')
         
     elif newTranscript == "select all":
-    	pyautogui.hotkey('ctrl', 'a')
+    	pyautogui.hotkey('command', 'a')
 
-    elif newTranscript == "windows search":
-        pyautogui.hotkey('win','s')
+    elif newTranscript == "global search":
+        pyautogui.hotkey('command',' ')
         
     #must open chrome first to use these
     elif newTranscript == "chrome search":
-        pyautogui.hotkey('ctrl','l')
+        pyautogui.hotkey('command','l')
 
-    elif newTranscript == "control find":
-        pyautogui.hotkey('ctrl','f')
+    elif newTranscript == "command find":
+        pyautogui.hotkey('command','f')
     
     elif newTranscript == "chrome tab":
-        pyautogui.hotkey('ctrl','t')
+        pyautogui.hotkey('command','t')
     
     elif newTranscript == "close tab":
-        pyautogui.hotkey('ctrl','w')
+        pyautogui.hotkey('command','w')
 
     elif newTranscript == "page down":
     	pyautogui.press('pgdn')
