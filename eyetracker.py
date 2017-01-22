@@ -18,21 +18,40 @@ capture = cv2.VideoCapture(0)
 time.sleep(0.5)
 
 
+eyeX = 0
+eyeY = 0
+
+newEyeX = 0
+newEyeY = 0
+
+calibrated_X = 0
+calibrated_Y = 0
+
 while True:
 	# update the mouse position
 
 	curX = mouse.position[0]
 	curY = mouse.position[1]
-	print 'MOUSE AT: ' + str(curX) + ', ' + str(curY)
+	# print 'MOUSE AT: ' + str(curX) + ', ' + str(curY)
 
-	_, input_image = capture.read()
+	ret, input_image = capture.read()
+
 
 	# search only within the face for der eyes
 	face_cascade = cv2.CascadeClassifier('haarcascade_face.xml')
+	eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 	face_found = face_cascade.detectMultiScale(input_image, 1.3, 5)
 
 	# print 'testetetset ' + str((face_found[0])[0])
+	input_image = cv2.cvtColor(input_image,cv2.COLOR_RGB2GRAY)
 
+
+	pupilFrame = input_image
+	pupilO = pupilFrame
+	windowClose = numpynav.ones((5,5), numpynav.uint8)
+	windowOpen = numpynav.ones((2,2), numpynav.uint8)
+	windowErode = numpynav.ones((2,2), numpynav.uint8)
+ 
 	for (x, y, w, h) in face_found:
 
 		x = (face_found[0])[0]
@@ -40,65 +59,132 @@ while True:
 		w = (face_found[0])[2]
 		h = (face_found[0])[3]
 
-		input_image = input_image[y:y+h, x:x+w]
-		input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+		# make the contrast wild af
+		pupilFrame = cv2.equalizeHist(input_image[y+(h/4):(y+h), x:(x+w)])
+		pupilO = pupilFrame
 
-		# detect der eye
-		eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
-		eyes_found = eye_cascade.detectMultiScale(input_image)
+		# threshold the goods like a door
+		# needed for morphology
+		_, pupilFrame = cv2.threshold(pupilFrame, 55, 255, cv2.THRESH_BINARY)
+
+		# apply some MORPHOLOGIES
+		# get rid of noise both inside and outside of the img
+		pupilFrame = cv2.morphologyEx(pupilFrame, cv2.MORPH_CLOSE, windowClose) # get rid of most crap inside the img (foreground)
+		pupilFrame = cv2.morphologyEx(pupilFrame, cv2.MORPH_ERODE, windowErode) # thin those boundaries boi
+		pupilFrame = cv2.morphologyEx(pupilFrame, cv2.MORPH_OPEN, windowOpen) # get rid of crap outside the img (background)
+
+		# find all the fwacking blobs, some of them are the pewpils
+		blobs = cv2.inRange(pupilFrame, 250, 255) # get all the blobs that are dark af (remember we binary thresholded them to be dark)
+
+		# find all the contours (basically shapes) in the img, and approximate the points between the middle to save data
+		countours, hierarchy = cv2.findContours(blobs, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+		# print countours
+
+		# advanced blob analysis techniques
+		# only finds the right pupil
+		# but do we really need anything else
+		# then again, do we really need anything?
+
+		# delete the biggest blob
+		if len(countours) >= 2:
+			# find the biggest blob
+			maxArea = 0
+			maIndex = 0
+			distanceX = [] # delete the left-most blob 
+			curIndex = 0
+			for count in countours:
+				area = cv2.contourArea(count)
+				center = cv2.moments(count)
+
+				# AHHHHHHHHHHHHH
+				if center['m00'] != 0:
+					cx,cy = int(center['m10']/center['m00']), int(center['m01']/center['m00'])
+
+				distanceX.append(cx)
+				if area > maxArea:
+					maxArea = area
+					maIndex = curIndex
+
+				curIndex += 1
+
+			del countours[maIndex]
+			del distanceX[maIndex]
 
 
-		# at this point we have the eyes
- 
-		# only draw two forking circles
-		# @TODO SHOULD I GET RID OF THIS
-		counter = 0
-		for (ex, ey, ew, er) in eyes_found:
+		# delete the leftmost blobhinav
+		if len(countours) >= 2:
+			edgeOfReality = distanceX.index(min(distanceX))
+			del countours[edgeOfReality]
+			del distanceX[edgeOfReality]
+
+		# get lwargest blawb
+		if len(countours) >= 1:
+			maxArea = 0
+			for count in countours:
+				area = cv2.contourArea(count)
+				if area > maxArea:
+					maxArea = area
+					largeblawb = count
+
+		if len(largeblawb) > 0:
+			center = cv2.moments(largeblawb)
 			
-			# draw a circle
-			counter += 1
-			if (counter > 2):
-				break
+			# calibrate the foirst time
+			if (calibrated_X == 0):
+				calibrated_X = newEyeX
+			
+			if (calibrated_Y == 0):
+				calibrated_Y = newEyeY
 
-			else:
-				cv2.circle(input_image, (ex + ew/2 , ey + ew/2), ew/2, (0, 
-255, 255), 5)
-				# # draw a cross on the center of the eye
-				# x1 = ex + ew/2
-				# x2 = ex + ew/2 + 5
-				# cv2.line(roi_gray, (x1, ey + ew/2), (x2, ey + ew/2), (0, 0, 0), 5)	
-				print str(ex + ew/2) + ', ' + str(ey + ew/2) 	
+			# they now have the old values
+			eyeX = newEyeX
+			eyeY = newEyeY
 
-				# determine which direction the mouse should move
-				left = 20
-				up = 20
-
-				if ex > curX:
-					left *= -1
-				if ey > curY:
-					up *= -1
-
-				mouse.move(left, up)
+			# update the new values
+			newEyeX,newEyeY = int(center['m10']/center['m00']), int(center['m01']/center['m00'])
+			# cv2.circle(pupilO, (cx, cy), 5, 255, -1)
+			print str(newEyeX) + ', ' + str(newEyeY)
 
 
+		eyes = eye_cascade.detectMultiScale(pupilFrame)
+		for (x, y, w, h) in eyes:
+			cv2.rectangle(pupilFrame, (x + ex, y + ey), (x+ex+ew, y+ey+eh), (0, 255, 0), 2)
+		# print str(eyeX) + ', ' + str(eyeY) + '_____' + str(newEyeX) + ', ' + str(newEyeY)
+ 		
+		# move the mouse but not the rat
+		# compare the old and new x,y values to determine the direction
+		# set a threshold so random jitters won't change it
+		# left = 0
+		# up = 0
+		# THRESHOLD = 1
+		# NEG_THRESH = -1
 
-		_,input_image = cv2.threshold(input_image,225,255,cv2.THRESH_TOZERO_INV)
+		# output = ''
+		# if (newEyeX - calibrated_X > THRESHOLD):
+		# 	left = 20
+		# 	output += 'left'
+		# elif (newEyeX - calibrated_X < NEG_THRESH):
+		# 	left = -20
+		# 	output += 'right'
 
+		# if (newEyeY - calibrated_Y > THRESHOLD):
+		# 	up = 20
+		# 	output += '___up'
+		# elif (newEyeY - calibrated_Y < NEG_THRESH):
+		# 	up = -20
+		# 	output += '___down'
 
-		# apply canny cheese
-		# roi_gray = cv2.Canny(roi_eye, 95, 100)
+		# print output
+		# mouse.move(left, up)
+		# print 'MOUSE---------' + str(mouse.position)
 
-		# # hough detection
-		# circles_found = cv2.HoughCircles(input_image, cv2.cv.CV_HOUGH_GRADIENT,11, 49)
+ 	cv2.namedWindow('DO NOT READ', cv2.WINDOW_NORMAL)
+ 	# cv2.resizeWindow('DO NOT READ', 300, 300)
+ 	cv2.imshow('DO NOT READ', pupilFrame)
+ 	
 
-		# print str(len(circles_found))
-		# if circles_found is not None:
-		# 	for (x, y, r) in circles_found:
-		# 		cv2.circle(output, (x, y), r, (0, 255, 0), 5)
-
-		cv2.imshow("don't read", input_image)
-
-		k = cv2.waitKey(30) & 0xff
-		if k == 27:
-			cv2.destroyAllWindows()
+	k = cv2.waitKey(30) & 0xff
+	if k == 27:
+		cv2.destroyAllWindows()
 
