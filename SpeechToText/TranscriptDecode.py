@@ -33,19 +33,8 @@ def determineIfWrite(newTranscript):
 	else:
 		return False
 
-def determineIfMouseActivate():
-	recordAndTranscribeAudio()
-
-		f = open('WatsonSTTResult.txt', 'r')
-
-		while True:
-			text = f.readline()
-			# text
-			if '"transcript": ' in text:
-				transcript = text[30:(len(text) - 3)]
-				if "tactile enable" in transcript:
-					return True
-				return False
+def determineIfMouseActivate(bo=False):
+	return bo
 
 def executeFunctions(newTranscript):
     
@@ -94,6 +83,9 @@ def executeFunctions(newTranscript):
 
     elif newTranscript == "tab":
     	pyautogui.press('tab')
+
+    elif newTranscript == 'tactile enable' or "enable" in newTranscript:
+    	determineIfMouseActivate(True)
     
     else:
         print "Error: Try Again"
