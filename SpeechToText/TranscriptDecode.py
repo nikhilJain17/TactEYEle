@@ -33,6 +33,20 @@ def determineIfWrite(newTranscript):
 	else:
 		return False
 
+def determineIfMouseActivate():
+	recordAndTranscribeAudio()
+
+		f = open('WatsonSTTResult.txt', 'r')
+
+		while True:
+			text = f.readline()
+			# text
+			if '"transcript": ' in text:
+				transcript = text[30:(len(text) - 3)]
+				if "tactile enable" in transcript:
+					return True
+				return False
+
 def executeFunctions(newTranscript):
     
     if newTranscript == "open chrome":
