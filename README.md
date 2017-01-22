@@ -8,4 +8,3 @@ PennApps XV Project
 4. PythonImagingLibrary `pip install pillow`
 5. Pynput: download
 6. Subprocess: already installed
-7. 
