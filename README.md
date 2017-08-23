@@ -1,5 +1,5 @@
 # TactEYEle
-PennApps XV Project
+PennApps XV Project - 3rd Place
 
 ##Dependencies to install
 1. Pyaudio `pip install pyaudio`
