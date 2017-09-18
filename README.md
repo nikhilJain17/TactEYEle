@@ -1,7 +1,7 @@
 # TactEYEle
 PennApps XV Project - 3rd Place
 
-##Dependencies to install
+### Dependencies to install
 1. Pyaudio `pip install pyaudio`
 2. Playsound `pip install playsound`
 3. OpenCV `pip install opencv`
