@@ -1,5 +1,6 @@
 # TactEYEle
 PennApps XV Project - 3rd Place
+https://youtu.be/5IFfr-ggy-8?t=1390
 
 ### Dependencies to install
 1. Pyaudio `pip install pyaudio`
